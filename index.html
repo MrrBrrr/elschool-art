@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ель School - v2: сайт-слайды из пиксельной линии</title>
+<style>
+  :root{
+    --bg:#f2f2ef;
+    --ink:#16181a;
+    --ink-dim:rgba(22,24,26,.55);
+    --accent:#5f9e1f;
+    --line:rgba(22,24,26,.16);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI","Inter",system-ui,sans-serif;
+  }
+  ::selection{background:var(--accent);color:#fff}
+
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:24px 48px 34px;
+    background:linear-gradient(to bottom, rgba(242,242,239,.9), rgba(242,242,239,0));
+  }
+  .logo{font-size:13px;letter-spacing:.42em;font-weight:700;text-transform:uppercase}
+  .logo b{color:var(--accent)}
+  nav{display:flex;gap:30px}
+  nav a{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none}
+  nav a:hover{color:var(--ink)}
+  @media(max-width:900px){nav{display:none}}
+
+  .sticky-cta{
+    position:fixed;right:26px;bottom:26px;z-index:60;
+    padding:15px 26px;background:var(--ink);color:var(--bg);
+    font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
+    box-shadow:0 8px 30px rgba(22,24,26,.25);transition:background .25s;
+  }
+  .sticky-cta:hover{background:var(--accent);color:#fff}
+
+  /* ===== рельса-навигация по слайдам (ростомер) ===== */
+  .rail{
+    position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:55;
+    display:flex;flex-direction:column;gap:0;align-items:center;
+  }
+  .rail .line{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+  .rail .fill{position:absolute;top:0;width:1px;height:0%;background:var(--accent);transition:height .2s}
+  .rail a{
+    position:relative;z-index:2;display:block;width:9px;height:9px;margin:9px 0;
+    border:1px solid var(--ink-dim);border-radius:50%;background:var(--bg);
+    transition:all .25s;
+  }
+  .rail a.on{background:var(--accent);border-color:var(--accent);transform:scale(1.35)}
+  .rail a span{
+    position:absolute;right:22px;top:50%;transform:translateY(-50%);
+    font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-dim);
+    white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none;
+  }
+  .rail a:hover span,.rail a.on span{opacity:1}
+  @media(max-width:900px){.rail{display:none}}
+
+  /* ===== слайды ===== */
+  .slide{
+    position:relative;min-height:100vh;overflow:hidden;
+    scroll-snap-align:start;
+    display:flex;align-items:center;
+  }
+  .sbg{
+    position:absolute;inset:0;background-size:cover;background-position:center;
+    transform:scale(1.045);will-change:transform;
+  }
+  .sbg video{width:100%;height:100%;object-fit:cover}
+  .scrim{position:absolute;inset:0;background:linear-gradient(90deg, rgba(242,242,239,.94) 0%, rgba(242,242,239,.78) 32%, rgba(242,242,239,.18) 58%, rgba(242,242,239,0) 72%)}
+  .slide.center .scrim{background:linear-gradient(0deg, rgba(242,242,239,.85) 0%, rgba(242,242,239,.25) 40%, rgba(242,242,239,0) 70%)}
+
+  .content{
+    position:relative;z-index:5;padding:0 48px;max-width:640px;
+  }
+  .num{font-size:clamp(26px,3vw,40px);font-weight:800;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:12px}
+  .content h2{
+    font-size:clamp(30px,4.6vw,58px);font-weight:800;line-height:1.06;
+    text-transform:uppercase;margin-bottom:18px;
+  }
+  .content h2 em{font-style:normal;color:var(--accent)}
+  .content p{font-size:15px;line-height:1.8;color:var(--ink-dim);margin-bottom:12px;max-width:460px}
+  .content .cta{
+    display:inline-block;margin-top:18px;padding:16px 36px;
+    background:var(--ink);color:var(--bg);text-decoration:none;
+    font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;
+  }
+  .content .cta:hover{background:var(--accent);color:#fff}
+
+  /* hero-слайд: крупная типографика */
+  .hero-t .thin{font-size:clamp(20px,2.6vw,36px);font-weight:200;letter-spacing:.36em;text-transform:uppercase}
+  .hero-t .fat{font-size:clamp(52px,8vw,112px);font-weight:800;line-height:1;text-transform:uppercase}
+  .hero-t .fat em{font-style:normal;color:var(--accent)}
+  .hero-t .rule{display:flex;align-items:center;gap:14px;margin-top:20px}
+  .hero-t .rule i{width:64px;height:2px;background:var(--accent)}
+  .hero-t .rule span{font-size:12px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase}
+
+  .scope{position:relative;width:14px;height:14px;flex-shrink:0;display:inline-block}
+  .scope::before{
+    content:'';position:absolute;inset:0;border:1px solid var(--accent);border-radius:50%;
+    animation:scopePulse 1.6s ease-in-out infinite;
+  }
+  .scope::after{
+    content:'';position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;
+    background:var(--accent);border-radius:50%;
+  }
+  @keyframes scopePulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.45}}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.on{opacity:1;transform:none}
+
+  /* слайд с реальными фото */
+  .shots{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1080px}
+  .shot{position:relative;border:1px solid var(--line);background:#fff}
+  .shot .iw{position:relative;overflow:hidden}
+  .shot img{width:100%;height:200px;object-fit:cover;display:block}
+  /* уголки-скобки ВЫДВИНУТЫ наружу за фото */
+  .shot::before{content:'';position:absolute;left:-7px;top:-7px;width:24px;height:24px;border-left:2.5px solid var(--accent);border-top:2.5px solid var(--accent);z-index:4}
+  .shot::after{content:'';position:absolute;right:-7px;bottom:-7px;width:24px;height:24px;border-right:2.5px solid var(--accent);border-bottom:2.5px solid var(--accent);z-index:4}
+  /* рамки-аннотации на фото */
+  .shot .ann{
+    position:absolute;border:1px solid rgba(255,255,255,.95);
+    box-shadow:0 0 0 1px rgba(0,0,0,.2);pointer-events:none;z-index:3;
+  }
+  .shot .ann i{
+    position:absolute;left:-1px;top:-24px;font-style:normal;white-space:nowrap;
+    padding:3px 8px;background:rgba(255,255,255,.93);border:1px solid rgba(22,24,26,.5);
+    font-size:9px;letter-spacing:.12em;color:var(--ink);text-transform:uppercase;
+  }
+  .shot figcaption{padding:10px 14px;font-size:11.5px;color:var(--ink-dim)}
+  .wide{max-width:1160px}
+  @media(max-width:900px){.shots{grid-template-columns:1fr}}
+
+  /* FAQ слайд */
+  .faq{max-width:760px;width:100%}
+  .faq details{border:1px solid var(--line);background:rgba(255,255,255,.6);margin-bottom:12px;padding:0 22px}
+  .faq details[open]{border-color:var(--accent)}
+  .faq summary{cursor:pointer;list-style:none;padding:17px 0;font-size:15.5px;font-weight:700;display:flex;justify-content:space-between;gap:14px}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary i{font-style:normal;color:var(--accent);font-weight:800;font-size:19px;flex-shrink:0;transition:transform .25s}
+  .faq details[open] summary i{transform:rotate(45deg)}
+  .faq .a{padding:0 0 16px;font-size:13.5px;line-height:1.75;color:var(--ink-dim)}
+  .faq .ai{display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;border:1px solid var(--line);padding:6px 12px 6px 9px;font-size:10.5px;letter-spacing:.08em;color:var(--ink-dim);min-height:28px}
+  .faq .ai .tx::after{content:'';display:inline-block;width:2px;height:11px;background:var(--accent);margin-left:3px;vertical-align:-1px;animation:caret 1s steps(1) infinite}
+  .faq .ai.done .tx::after{display:none}
+  .faq .ai.done{border-color:var(--accent);outline:1px solid var(--accent);outline-offset:2px}
+  @keyframes caret{50%{opacity:0}}
+
+  /* форма */
+  .form{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+  .form input{padding:15px 18px;border:1px solid var(--line);background:#fff;font-size:14px;min-width:210px;outline:none}
+  .form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent)}
+  .form button{padding:15px 32px;background:var(--ink);color:var(--bg);border:none;cursor:pointer;font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+  .form button:hover{background:var(--accent);color:#fff}
+  .form-note{margin-top:12px;font-size:10.5px;color:rgba(22,24,26,.4)}
+
+  footer.site{
+    padding:34px 48px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    font-size:11.5px;color:var(--ink-dim);
+  }
+  canvas#gz{position:fixed;inset:0;z-index:20;pointer-events:none}
+  @media (prefers-reduced-motion: reduce){ html{scroll-snap-type:none} }
+
+  /* ===== мобильная версия ===== */
+  @media (max-width:760px){
+    header{padding:14px 20px 22px}
+    .logo{font-size:11px;letter-spacing:.3em}
+    canvas#gz{display:none}
+    .slide{align-items:flex-end}
+    .slide.center{align-items:center}
+    .content{padding:0 20px 78px;max-width:100%}
+    .content p{font-size:13.5px;max-width:100%}
+    .content h2{font-size:clamp(23px,7vw,34px);overflow-wrap:break-word}
+    .num{font-size:24px}
+    .hero-t .fat{font-size:17vw}
+    .hero-t .thin{font-size:5.6vw}
+    .scrim,.slide.center .scrim{
+      background:linear-gradient(0deg,
+        rgba(242,242,239,.97) 0%, rgba(242,242,239,.84) 40%,
+        rgba(242,242,239,.14) 68%, rgba(242,242,239,0) 82%);
+    }
+    .sbg{background-position:center 22%}
+    .sbg video{object-position:center 28%}
+    /* кадрирование под вертикаль: объект в верхней трети */
+    #s3 .sbg{background-position:62% 24%}
+    #s4 .sbg{background-position:70% 24%}
+    #s5 .sbg{background-position:56% 30%}
+    #s6 .sbg{background-position:center 30%}
+    #s8 .sbg{background-position:center 26%}
+    #s10 .sbg{background-position:58% 36%}
+    .sticky-cta{right:14px;bottom:14px;padding:12px 16px;font-size:10px;letter-spacing:.14em}
+    .shot img{height:170px}
+    .shot .ann i{font-size:8px;top:-20px}
+    .form input{min-width:0;flex:1 1 100%}
+    .form button{flex:1 1 100%}
+    .faq summary{font-size:14px;padding:14px 0}
+    .faq .a{font-size:12.5px}
+    footer.site{padding:24px 20px;font-size:10.5px}
+  }
+</style>
+</head>
+<body>
+<canvas id="gz"></canvas>
+
+<header>
+  <div class="logo">ЕЛЬ <b>SCHOOL</b></div>
+  <nav>
+    <a href="#s2">Маршрут</a><a href="#s3">Учёба</a><a href="#s4">Тьюторы</a>
+    <a href="#s7">Школа</a><a href="#s9">Вопросы</a><a href="#s10">Диагностика</a>
+  </nav>
+</header>
+<a class="sticky-cta" href="#s10">Записаться на диагностику</a>
+
+<div class="rail" id="rail">
+  <div class="line"></div><div class="fill" id="railFill"></div>
+</div>
+
+<!-- 1. HERO: видео walk -->
+<section class="slide" id="s1" data-img="gen/var-b-walk.png"
+  data-anchors='[[0.36,0.56,"рюкзак: собран [1.00]"],[0.2,0.62,"вчерашний день: позади"],[0.44,0.44,"курс: вперёд [0.98]"]]'>
+  <div class="sbg"><video id="walkVid" src="gen/video-b-walk.mp4" poster="gen/var-b-walk.png" autoplay muted playsinline></video></div>
+  <div class="scrim"></div>
+  <div class="content hero-t">
+    <div class="thin reveal">Здесь</div>
+    <div class="fat reveal">Растут<em>.</em></div>
+    <div class="rule reveal"><i></i><span>Частная школа · 1-11 класс · Новосибирск</span></div>
+    <p class="reveal" style="margin-top:18px">Школа полного дня на Ползунова, 7: уроки, проекты,
+    тьюторы и допзанятия с 8:30 до 16:30. Рост ребёнка виден каждую неделю.</p>
+    <a class="cta reveal" href="#s10">Записаться на диагностику</a>
+  </div>
+</section>
+
+<!-- 2. МАРШРУТ: grow -->
+<section class="slide" id="s2" data-img="gen/var-b-grow.png"
+  data-anchors='[[0.37,0.6,"точка старта [1.00]"],[0.47,0.52,"набирает высоту [0.94]"],[0.57,0.4,"почти взрослый [0.90]"],[0.63,0.3,"рост: измеряем честно"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-grow.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">01.<i class="scope"></i></div>
+    <h2 class="reveal">Свой <em>маршрут</em></h2>
+    <p class="reveal">Нулевой класс с 5,5 лет, начальная, средняя и старшая школа - один маршрут
+    без пересадок. Перевод из другой школы - круглый год, онлайн-формат - из любого города.</p>
+    <p class="reveal">На входе - персональная диагностика: честная точка старта и план роста.</p>
+  </div>
+</section>
+
+<!-- 3. УЧЁБА: board -->
+<section class="slide" id="s3" data-img="gen/var-b-board.png"
+  data-anchors='[[0.5,0.42,"недостающий кусочек: найден"],[0.62,0.5,"уверенность [0.93]"],[0.42,0.62,"страх ошибки: не обнаружен [0.02]"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-board.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">02.<i class="scope"></i></div>
+    <h2 class="reveal">Понимать, <em>а не зубрить</em></h2>
+    <p class="reveal">Мы формируем картину мира, а не гонимся за оценками. Проекты и олимпиадная
+    школа включены в программу: от «Моего первого проекта» в 5-7 классе до защиты перед
+    комиссией с представителями вузов.</p>
+  </div>
+</section>
+
+<!-- 4. ТЬЮТОР: duo -->
+<section class="slide" id="s4" data-img="gen/var-b-duo.png"
+  data-anchors='[[0.75,0.22,"наклонился: слушает [0.99]"],[0.63,0.52,"услышан [1.00]"],[0.7,0.85,"на одной земле [0.97]"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-duo.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">03.<i class="scope"></i></div>
+    <h2 class="reveal">Рядом - <em>тьютор</em></h2>
+    <p class="reveal">У каждого ребёнка есть взрослый, который слушает, не перебивает и помогает
+    выстроить свой путь. Родители получают понятную картину: что получается, где нужна
+    поддержка, куда двигаемся.</p>
+  </div>
+</section>
+
+<!-- 5. СРЕДА: high5 -->
+<section class="slide" id="s5" data-img="gen/var-b-high5.png"
+  data-anchors='[[0.57,0.4,"победа: общая [1.00]"],[0.53,0.75,"гравитация: побеждена [0.87]"],[0.66,0.55,"дружба: подтверждена [0.99]"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-high5.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">04.<i class="scope"></i></div>
+    <h2 class="reveal">Среда, где <em>радуются</em> друг другу</h2>
+    <p class="reveal">Маленькие классы, общие проекты и допзанятия на одной площадке - от
+    спорта до творчества. Здесь не выживают на переменах, здесь дружат.</p>
+  </div>
+</section>
+
+<!-- 6. ЗНАНИЯ: read -->
+<section class="slide" id="s6" data-img="gen/var-b-read.png"
+  data-anchors='[[0.5,0.6,"книга: живая [0.99]"],[0.63,0.32,"идеи: разлетаются"],[0.49,0.28,"внимание: глубокое [0.96]"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-read.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">05.<i class="scope"></i></div>
+    <h2 class="reveal">Читаем, копаем, <em>спорим</em></h2>
+    <p class="reveal">Глубокое чтение, исследовательские задачи и дискуссии - вместо
+    пересказа параграфов. Домашка не съедает вечер семьи: всё главное происходит в школе.</p>
+  </div>
+</section>
+
+<!-- 7. РЕАЛЬНАЯ ШКОЛА: фото -->
+<section class="slide center" id="s7">
+  <div class="content wide" style="max-width:1160px">
+    <div class="num reveal">06.<i class="scope"></i></div>
+    <h2 class="reveal">Всё это - <em>по-настоящему</em></h2>
+    <div class="shots">
+      <figure class="shot reveal"><div class="iw"><img src="img/09_Rectangle_144650.png" alt="Коридор"><div class="ann" style="left:52%;top:30%;width:34%;height:40%"><i>личные шкафчики [1.00]</i></div></div><figcaption>Пространство, где у каждого есть своё место</figcaption></figure>
+      <figure class="shot reveal"><div class="iw"><img src="img/10_Rectangle_144649.png" alt="Мастерская"><div class="ann" style="left:8%;top:20%;width:36%;height:50%"><i>мастерская [0.88]</i></div></div><figcaption>Руки заняты делом, голова - смыслом</figcaption></figure>
+      <figure class="shot reveal"><div class="iw"><img src="img/21_Rectangle_144671.png" alt="Класс"><div class="ann" style="left:6%;top:14%;width:42%;height:58%"><i>свет: в пол [1.00]</i></div></div><figcaption>Классы, в которых хочется остаться</figcaption></figure>
+    </div>
+    <p class="reveal" style="margin-top:18px">Реальные интерьеры школы на Ползунова, 7. Кадры с детьми появятся
+    после согласования с родителями - так положено, и мы так делаем.</p>
+  </div>
+</section>
+
+<!-- 8. ФИНАЛ МАРШРУТА: graduate -->
+<section class="slide" id="s8" data-img="gen/var-b-graduate.png"
+  data-anchors='[[0.5,0.18,"шапочка: заслужена [1.00]"],[0.57,0.32,"золото: настоящее"],[0.5,0.85,"каждая ступень: пройдена"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-graduate.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal">07.<i class="scope"></i></div>
+    <h2 class="reveal">Финал маршрута - <em>твой</em></h2>
+    <p class="reveal">Карьерный трек, подготовка к ОГЭ и ЕГЭ, «Мой главный проект» перед комиссией
+    с представителями вузов. Выпускник выходит не с одними баллами - с пониманием, куда и зачем идёт.</p>
+  </div>
+</section>
+
+<!-- 9. FAQ -->
+<section class="slide center" id="s9">
+  <div class="content" style="max-width:820px;width:100%">
+    <div class="num reveal">08.<i class="scope"></i></div>
+    <h2 class="reveal">Чем мы <em>отличаемся</em></h2>
+    <div class="faq reveal">
+      <details open>
+        <summary>Чем вы отличаетесь от обычной школы? <i>+</i></summary>
+        <div class="a">Картина мира вместо гонки за оценками, тьютор рядом с каждым ребёнком, день с 8:30 до 16:30 - уроки, проекты и допзанятия в одном месте.</div>
+        <div class="ai"><i class="scope"></i><span class="tx" data-text="оценки как самоцель: не обнаружены [0.00]"></span></div>
+      </details>
+      <details>
+        <summary>Что с оценками и мотивацией? <i>+</i></summary>
+        <div class="a">Мы измеряем рост, а не оцениваем ребёнка: диагностика на входе, понятная родителю картина прогресса. Мотивация - на интересе, а не на страхе двойки.</div>
+        <div class="ai"><i class="scope"></i><span class="tx" data-text="стресс от двоек: не обнаружен [0.02]"></span></div>
+      </details>
+      <details>
+        <summary>Можно ли перевестись среди года? <i>+</i></summary>
+        <div class="a">Да, круглый год: диагностика, план адаптации, тьютор на первые недели.</div>
+        <div class="ai"><i class="scope"></i><span class="tx" data-text="маршрут перевода: построен [1.00]"></span></div>
+      </details>
+      <details>
+        <summary>Есть ли онлайн-формат? <i>+</i></summary>
+        <div class="a">Да, полноценная онлайн-школа: кураторы, тьюторы, проекты и олимпиады из любого города.</div>
+        <div class="ai"><i class="scope"></i><span class="tx" data-text="расстояние: не помеха [0.99]"></span></div>
+      </details>
+      <details>
+        <summary>Сколько стоит обучение? <i>+</i></summary>
+        <div class="a">Зависит от программы и формата. Честный первый шаг - бесплатная диагностика и экскурсия, дальше подберём программу. Возможна оплата материнским капиталом.</div>
+        <div class="ai"><i class="scope"></i><span class="tx" data-text="честный ответ: обнаружен [1.00]"></span></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 10. CTA: backpack -->
+<section class="slide" id="s10" data-img="gen/var-b-backpack.png"
+  data-anchors='[[0.47,0.5,"рюкзак: полон открытий [1.00]"],[0.63,0.42,"знания: рвутся наружу"],[0.35,0.7,"место для вашего ребёнка: есть"]]'>
+  <div class="sbg" style="background-image:url(gen/var-b-backpack.png)"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <div class="num reveal"><i class="scope"></i></div>
+    <h2 class="reveal">Первый шаг - <em>диагностика</em></h2>
+    <p class="reveal">Бесплатная персональная диагностика и экскурсия: посмотрите школу,
+    познакомьтесь с тьюторами, получите честную картину по вашему ребёнку.</p>
+    <form class="form reveal" onsubmit="event.preventDefault();this.querySelector('button').textContent='Заявка принята ✓';">
+      <input type="text" placeholder="Имя" required>
+      <input type="tel" placeholder="Телефон" required>
+      <button type="submit">Записаться</button>
+    </form>
+    <div class="form-note reveal">Прототип: форма демонстрационная, данные никуда не отправляются.</div>
+  </div>
+</section>
+
+<footer class="site">
+  <div>ЕЛЬ SCHOOL · частная школа 1-11 класс · гослицензия и аккредитация</div>
+  <div>Новосибирск, Ползунова 7 · тел. 388-74-02</div>
+  <div>прототип v2 · сайт-слайды пиксельной линии</div>
+</footer>
+
+<script>
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===== hero-видео: доигрывает до конца и замирает на финальной позе
+   (мальчик развернулся к зрителю, шлейф осел). Клик по слайду - повтор ===== */
+const walkVid = document.getElementById('walkVid');
+if(walkVid){
+  const stopAt = 3.9; /* остановился, корпус 3/4, взгляд в сторону - не в упор */
+  walkVid.addEventListener('timeupdate', ()=>{
+    if(walkVid.currentTime >= stopAt) walkVid.pause();
+  });
+  document.getElementById('s1').addEventListener('click', e=>{
+    if(e.target.closest('a,button,input')) return;
+    walkVid.currentTime = 0; walkVid.play();
+  });
+}
+
+/* ===== reveal ===== */
+const io = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on'); });
+},{threshold:.2});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+setTimeout(()=>document.querySelectorAll('.reveal:not(.on)').forEach(el=>el.classList.add('on')), 1800);
+
+/* ===== рельса-навигация ===== */
+const slides = [...document.querySelectorAll('.slide')];
+const rail = document.getElementById('rail');
+const railLabels = ['Старт','Маршрут','Учёба','Тьютор','Среда','Знания','Школа','Финал','Вопросы','Запись'];
+slides.forEach((s,i)=>{
+  const a = document.createElement('a');
+  a.href = '#'+s.id;
+  a.innerHTML = `<span>${railLabels[i]||''}</span>`;
+  rail.appendChild(a);
+});
+const railDots = [...rail.querySelectorAll('a')];
+
+/* ===== активный слайд ===== */
+let active = 0;
+const actIo = new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting && e.intersectionRatio > .55){
+      active = slides.indexOf(e.target);
+      railDots.forEach((d,i)=>d.classList.toggle('on', i===active));
+      gaze = {i:0, t0:performance.now()};
+    }
+  });
+},{threshold:[.55]});
+slides.forEach(s=>actIo.observe(s));
+
+addEventListener('scroll', ()=>{
+  const max = document.documentElement.scrollHeight - innerHeight;
+  document.getElementById('railFill').style.height = (Math.min(1, scrollY/max)*100)+'%';
+},{passive:true});
+
+/* ===== FAQ печать ===== */
+function typeAi(d){
+  const ai = d.querySelector('.ai'); if(!ai || ai.dataset.busy) return;
+  const tx = ai.querySelector('.tx'); const full = tx.dataset.text||'';
+  ai.dataset.busy='1'; ai.classList.remove('done'); tx.textContent='';
+  if(reduced){ tx.textContent=full; ai.classList.add('done'); return; }
+  let i=0; const t=setInterval(()=>{
+    tx.textContent=full.slice(0,++i);
+    if(i>=full.length){clearInterval(t);ai.classList.add('done');delete ai.dataset.busy;}
+  },28);
+}
+document.querySelectorAll('.faq details').forEach(d=>{
+  d.addEventListener('toggle',()=>{ if(d.open) typeAi(d); });
+});
+const faqIo = new IntersectionObserver(es=>{es.forEach(e=>{
+  if(e.isIntersecting){document.querySelectorAll('.faq details[open]').forEach(typeAi);faqIo.disconnect();}
+})},{threshold:.3});
+const fq=document.querySelector('.faq'); if(fq) faqIo.observe(fq);
+
+/* ===== параллакс фонов ===== */
+let pmx=0,pmy=0,ptx=0,pty=0;
+addEventListener('pointermove',e=>{
+  ptx=(e.clientX/innerWidth-.5)*14; pty=(e.clientY/innerHeight-.5)*9;
+});
+
+/* ===== движок взгляда: по якорям активного слайда ===== */
+const cv = document.getElementById('gz');
+const cx = cv.getContext('2d');
+let W,H;
+function resize(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  W=innerWidth;H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  cx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);
+
+const IMG_W=2048, IMG_H=1152;
+let gaze={i:0,t0:performance.now()};
+const FLY=900, DWELL=2400;
+function ease(k){return k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2}
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+
+function anchorsOf(s){
+  try{ return JSON.parse(s.dataset.anchors||'null'); }catch(e){ return null; }
+}
+function imgToScreen(slide, fx, fy){
+  const r = slide.getBoundingClientRect();
+  const s0 = Math.max(r.width/IMG_W, r.height/IMG_H);
+  const offX = r.left + (r.width - IMG_W*s0)/2;
+  const offY = r.top + (r.height - IMG_H*s0)/2;
+  let px = offX + fx*IMG_W*s0;
+  let py = offY + fy*IMG_H*s0;
+  const cxr = r.left + r.width/2, cyr = r.top + r.height/2;
+  px = cxr + (px-cxr)*1.045 - pmx;
+  py = cyr + (py-cyr)*1.045 - pmy;
+  return [px,py];
+}
+
+function draw(){
+  const now = performance.now();
+  pmx+=(ptx-pmx)*.05; pmy+=(pty-pmy)*.05;
+  cx.clearRect(0,0,W,H);
+
+  /* параллакс фонов видимых слайдов */
+  for(const s of slides){
+    const bg = s.querySelector('.sbg');
+    if(!bg) continue;
+    const r = s.getBoundingClientRect();
+    if(r.bottom<0||r.top>H) continue;
+    const k = r.top / H; /* -1..1 */
+    bg.style.transform = `scale(1.045) translate(${-pmx*.6}px, ${k*-26 - pmy*.6}px)`;
+  }
+
+  const slide = slides[active];
+  const anchors = (innerWidth <= 760) ? null : (slide ? anchorsOf(slide) : null);
+  if(anchors && anchors.length){
+    const cur = anchors[gaze.i % anchors.length];
+    const prev = anchors[(gaze.i-1+anchors.length)%anchors.length];
+    const dt = now - gaze.t0;
+    if(dt>FLY+DWELL && !reduced){ gaze.i=(gaze.i+1)%anchors.length; gaze.t0=now; }
+    const k = reduced?1:Math.min(1,dt/FLY);
+    const e = ease(k);
+    const [ax,ay]=imgToScreen(slide,cur[0],cur[1]);
+    const [px,py]=imgToScreen(slide,prev[0],prev[1]);
+    const gx=px+(ax-px)*e, gy=py+(ay-py)*e;
+
+    cx.lineWidth=1;
+    cx.font='10.5px "Segoe UI",sans-serif';
+
+    if(!reduced && dt<900){
+      const fa=1-dt/900;
+      cx.strokeStyle=hexA('#16181a',.2*fa);
+      cx.beginPath();cx.arc(px,py,7,0,6.284);cx.stroke();
+    }
+    const settled=k>=1;
+    const pulse=settled?1+.14*Math.sin((dt-FLY)/260):1;
+    cx.strokeStyle=hexA('#16181a',.55);
+    cx.beginPath();cx.arc(gx,gy,6*pulse,0,6.284);cx.stroke();
+    cx.beginPath();
+    cx.moveTo(gx-11*pulse,gy);cx.lineTo(gx-4,gy);
+    cx.moveTo(gx+4,gy);cx.lineTo(gx+11*pulse,gy);
+    cx.moveTo(gx,gy-11*pulse);cx.lineTo(gx,gy-4);
+    cx.moveTo(gx,gy+4);cx.lineTo(gx,gy+11*pulse);cx.stroke();
+
+    const label=cur[2];
+    const chars=reduced?label.length:settled?Math.min(label.length,Math.floor((dt-FLY)/26)):0;
+    const txt=label.slice(0,chars);
+    const tw=cx.measureText(label).width;
+    const bw=Math.max(56,tw+20), bh=26;
+    let bx=Math.min(Math.max(12,gx+18),W-bw-12);
+    let by=Math.min(Math.max(76,gy-44),H-bh-12);
+
+    /* белая подложка - подпись читаема на любом фоне */
+    cx.fillStyle='rgba(255,255,255,.93)';
+    cx.fillRect(bx,by,bw,bh);
+    cx.strokeStyle=hexA('#16181a',.6);
+    cx.strokeRect(bx,by,bw,bh);
+    cx.fillStyle=hexA('#16181a',.6);
+    cx.fillRect(bx-2,by-2,4,4);
+    cx.strokeStyle=hexA('#16181a',.28);
+    cx.beginPath();cx.moveTo(bx+(gx>bx+bw/2?bw:0),by+bh);cx.lineTo(gx,gy);cx.stroke();
+    if(txt){
+      cx.fillStyle=hexA('#16181a',.85);
+      cx.fillText(txt,bx+10,by+bh/2+3.5);
+      if(!reduced&&chars<label.length&&Math.sin(now/120)>0){
+        const cw=cx.measureText(txt).width;
+        cx.fillRect(bx+11+cw,by+7,1.5,bh-14);
+      }
+    }
+
+    /* второй кислотный контур - «определение подтверждено» */
+    const typed = chars>=label.length;
+    if(settled && typed){
+      const ca = reduced?1:Math.min(1,(dt-FLY-label.length*26)/320);
+      const ACC = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#5f9e1f';
+      cx.strokeStyle=hexA(ACC,.85*ca);
+      cx.strokeRect(bx-3,by-3,bw+6,bh+6);
+      cx.beginPath();cx.arc(gx,gy,11*pulse,0,6.284);cx.stroke();
+      cx.fillStyle=hexA(ACC,.9*ca);
+      cx.fillRect(bx+bw-5,by-5,4,4);
+    }
+  }
+  requestAnimationFrame(draw);
+}
+
+resize();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
