@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ель School - кадр 01 (стиль-кадр на приёмку)</title>
+<style>
+  :root{
+    --bg:#04070a;
+    --ink:#eef3ef;
+    --ink-dim:rgba(238,243,239,.55);
+    --accent:#d8b65c;      /* палитра 1: хвоя + золото */
+    --needle:#7fb069;
+    --line:rgba(238,243,239,.16);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI","Inter",system-ui,sans-serif;
+    overflow:hidden;
+  }
+  canvas{position:fixed;inset:0;display:block}
+
+  /* ---- сетка кадра ---- */
+  .frame{position:fixed;inset:0;pointer-events:none}
+
+  header{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:34px 48px;
+  }
+  .logo{
+    font-size:13px;letter-spacing:.42em;font-weight:600;
+    text-transform:uppercase;
+  }
+  .logo b{color:var(--accent);font-weight:600}
+  nav{display:flex;gap:34px;align-items:center}
+  nav span{
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .burger{width:22px;height:10px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+
+  /* ---- левый блок: заголовок ---- */
+  .title{
+    position:absolute;left:48px;top:50%;transform:translateY(-54%);
+    max-width:44vw;
+  }
+  .title .thin{
+    font-size:clamp(22px,3.2vw,44px);
+    font-weight:200;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--ink);opacity:.92;
+  }
+  .title .fat{
+    font-size:clamp(56px,9.5vw,132px);
+    font-weight:800;letter-spacing:.015em;line-height:1.02;
+    text-transform:uppercase;
+  }
+  .title .rule{
+    display:flex;align-items:center;gap:14px;margin:26px 0 0;
+  }
+  .title .rule i{display:block;width:64px;height:1px;background:var(--accent)}
+  .title .rule span{
+    font-size:12.5px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;
+  }
+  .cta{
+    pointer-events:auto;
+    display:inline-block;margin-top:38px;
+    padding:15px 34px;
+    border:1px solid var(--accent);
+    color:var(--ink);
+    font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;
+    text-decoration:none;
+    transition:background .3s,color .3s;
+  }
+  .cta:hover{background:var(--accent);color:#10130c}
+
+  /* ---- правый блок: номер главы ---- */
+  .chapter{
+    position:absolute;right:110px;bottom:96px;text-align:left;
+  }
+  .chapter .num{
+    font-size:clamp(40px,4.6vw,64px);font-weight:800;color:var(--accent);
+    line-height:1;
+  }
+  .chapter .name{
+    margin-top:8px;
+    font-size:13px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink);
+  }
+  .chapter .sub{
+    margin-top:10px;max-width:210px;
+    font-size:11px;line-height:1.7;color:var(--ink-dim);
+  }
+
+  /* ---- вертикальная линия и колонка справа ---- */
+  .vline{
+    position:absolute;right:64px;top:120px;bottom:200px;width:1px;
+    background:var(--line);
+  }
+  .side{
+    position:absolute;right:26px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:22px;align-items:center;
+  }
+  .side span{
+    writing-mode:vertical-rl;
+    font-size:10.5px;letter-spacing:.3em;color:var(--ink-dim);text-transform:uppercase;
+  }
+
+  /* ---- низ ---- */
+  footer{
+    position:absolute;left:48px;right:48px;bottom:34px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .dots{display:flex;gap:10px}
+  .dots i{width:6px;height:6px;border:1px solid var(--ink-dim);border-radius:50%}
+  .dots i.on{background:var(--accent);border-color:var(--accent)}
+  .hint{
+    font-size:10.5px;letter-spacing:.12em;color:rgba(238,243,239,.3);
+    text-transform:uppercase;
+  }
+
+  @media (max-width:760px){
+    header{padding:22px}
+    nav span{display:none}
+    .title{left:22px;max-width:86vw}
+    .chapter{right:22px;bottom:120px}
+    .vline,.side{display:none}
+    footer{left:22px;right:22px}
+  }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div class="frame">
+  <header>
+    <div class="logo">ЕЛЬ <b>SCHOOL</b></div>
+    <nav>
+      <span>Школа</span><span>Маршруты</span><span>Контакты</span>
+      <div class="burger"></div>
+    </nav>
+  </header>
+
+  <div class="title">
+    <div class="thin">Здесь</div>
+    <div class="fat">Растут</div>
+    <div class="rule"><i></i><span>Частная школа · 1-11 класс · Новосибирск</span></div>
+    <a class="cta" href="#">Записаться на диагностику</a>
+  </div>
+
+  <div class="chapter">
+    <div class="num">01.</div>
+    <div class="name">Начало</div>
+    <div class="sub">Рост ребёнка видно каждую неделю - мы его измеряем и показываем вам.</div>
+  </div>
+
+  <div class="vline"></div>
+  <div class="side"><span>Ползунова, 7</span></div>
+
+  <footer>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="hint">стиль-кадр · палитры: клавиши 1 2 3</div>
+  </footer>
+</div>
+
+<script>
+/* ============ палитры (переключение 1/2/3) ============ */
+const PALETTES = {
+  1: {name:'хвоя + золото', bg:'#04070a', accent:'#d8b65c', needle:[127,176,105], warm:[216,182,92]},
+  2: {name:'северная мята', bg:'#030809', accent:'#9be8c5', needle:[110,168,132], warm:[155,232,197]},
+  3: {name:'тёплый янтарь', bg:'#070604', accent:'#e8a87c', needle:[124,162,98],  warm:[232,168,124]},
+};
+let pal = PALETTES[1];
+function applyPalette(n){
+  pal = PALETTES[n];
+  document.documentElement.style.setProperty('--accent', pal.accent);
+  document.documentElement.style.setProperty('--bg', pal.bg);
+  document.body.style.background = pal.bg;
+}
+addEventListener('keydown', e=>{ if(PALETTES[e.key]) applyPalette(e.key); });
+
+/* ============ canvas ============ */
+const cv = document.getElementById('cv');
+const cx = cv.getContext('2d');
+let W,H,DPR;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function resize(){
+  DPR = Math.min(devicePixelRatio||1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  buildTree();
+}
+addEventListener('resize', resize);
+
+/* ---- силуэт ели: ярусы хвои, слегка неровные ---- */
+function silhouette(t){ // t: 0 (низ) .. 1 (верх), возвращает полуширину 0..1
+  if(t>1||t<0) return 0;
+  const cone = (1-t)*0.92+0.08;                 // общий конус
+  const tiers = 0.62+0.38*Math.abs(Math.sin(t*Math.PI*4.2+0.4)); // лапы-ярусы
+  const wobble = 0.94+0.06*Math.sin(t*23.7);    // неровность
+  return cone*tiers*wobble;
+}
+
+/* ---- частицы ---- */
+let parts = [];
+let tree = {x:0, yTop:0, yBot:0, halfW:0};
+
+function buildTree(){
+  const mobile = W<760;
+  tree.x    = mobile ? W*0.52 : W*0.56;
+  tree.yTop = H*0.16;
+  tree.yBot = H*0.86;
+  tree.halfW= Math.min(W*0.16, (tree.yBot-tree.yTop)*0.34);
+
+  const N = mobile ? 700 : 1300;
+  parts = [];
+  for(let i=0;i<N;i++){
+    const t = Math.pow(Math.random(),0.82);      // плотнее к низу
+    const w = silhouette(t)*tree.halfW;
+    const x = (Math.random()*2-1);
+    if(Math.abs(x)>1) continue;
+    parts.push({
+      t, // высота 0..1
+      xr: x*w*(0.35+0.65*Math.random()),         // плотнее к оси
+      r: 0.6+Math.random()*1.7,
+      tw: Math.random()*Math.PI*2,               // фаза мерцания
+      sw: Math.random()*Math.PI*2,               // фаза покачивания
+      up: 0.05+Math.random()*0.22,               // скорость подъёма (пыльца)
+      gold: Math.random()<0.12,                  // тёплые искры
+      free: Math.random()<0.10                   // отрывается и летит вверх
+    });
+  }
+
+  /* ствол */
+  for(let i=0;i<40;i++){
+    parts.push({t:Math.random()*0.1, xr:(Math.random()*2-1)*3, r:1.1,
+      tw:Math.random()*6, sw:0, up:0, gold:false, free:false, trunk:true});
+  }
+}
+
+/* ---- каркас: рамки с метками, переезжают раз в несколько секунд ---- */
+const LABELS = ['8:30','16:30','1 : 12','11 лет','тьютор','рост'];
+let labelIdx = 0;
+let boxes = [];
+function spawnBoxes(){
+  boxes = [];
+  const n = W<760 ? 2 : 4;
+  for(let i=0;i<n;i++){
+    boxes.push(newBoxTarget({}));
+  }
+}
+function newBoxTarget(b){
+  const t = 0.15+Math.random()*0.7;
+  const w = silhouette(t)*tree.halfW;
+  const bw = 60+Math.random()*90, bh = 26+Math.random()*46;
+  return Object.assign(b,{
+    x0:b.x1 ?? (tree.x+(Math.random()*2-1)*w*1.4),
+    y0:b.y1 ?? (tree.yBot-t*(tree.yBot-tree.yTop)),
+    x1: tree.x+(Math.random()*2-1)*w*1.5,
+    y1: tree.yBot-t*(tree.yBot-tree.yTop)+(Math.random()*2-1)*30,
+    w:bw, h:bh,
+    label: LABELS[(labelIdx++) % LABELS.length],
+    born: perf(), life: 5000+Math.random()*4000, ease:0
+  });
+}
+function perf(){ return performance.now(); }
+
+/* ---- ростомер ---- */
+const MARKS = [
+  {t:0.06,label:'0 класс'},
+  {t:0.32,label:'1-4'},
+  {t:0.60,label:'5-9'},
+  {t:0.86,label:'10-11'},
+];
+
+/* ---- параллакс ---- */
+let mx=0,my=0, tx=0,ty=0;
+addEventListener('pointermove', e=>{
+  tx = (e.clientX/W-0.5)*14;
+  ty = (e.clientY/H-0.5)*10;
+});
+
+/* ---- рендер ---- */
+let t0 = perf();
+function draw(){
+  const now = perf();
+  const time = (now-t0)/1000;
+  mx += (tx-mx)*0.04; my += (ty-my)*0.04;
+
+  cx.clearRect(0,0,W,H);
+
+  /* лёгкое свечение земли под елью */
+  const g = cx.createRadialGradient(tree.x,tree.yBot,10,tree.x,tree.yBot,tree.halfW*2.2);
+  g.addColorStop(0,'rgba(255,255,255,0.045)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  cx.fillStyle=g;
+  cx.fillRect(tree.x-tree.halfW*2.2,tree.yBot-tree.halfW*1.2,tree.halfW*4.4,tree.halfW*1.6);
+
+  /* --- каркас --- */
+  cx.lineWidth = 1;
+  for(const b of boxes){
+    if(now-b.born > b.life && !reduced) newBoxTarget(b), b.born=now;
+    const k = reduced?1:Math.min(1,(now-b.born)/1600);
+    const e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+    const bx = b.x0+(b.x1-b.x0)*e + mx*0.4;
+    const by = b.y0+(b.y1-b.y0)*e + my*0.4;
+
+    cx.strokeStyle='rgba(238,243,239,0.28)';
+    cx.strokeRect(bx,by,b.w,b.h);
+    /* линия-вынос к оси дерева */
+    cx.strokeStyle='rgba(238,243,239,0.12)';
+    cx.beginPath();
+    cx.moveTo(bx + (bx<tree.x ? b.w : 0), by+b.h/2);
+    cx.lineTo(tree.x, by+b.h/2);
+    cx.stroke();
+    /* узел */
+    cx.fillStyle='rgba(238,243,239,0.75)';
+    cx.fillRect(tree.x-1.5, by+b.h/2-1.5, 3,3);
+    /* подпись */
+    cx.fillStyle='rgba(238,243,239,0.8)';
+    cx.font='10.5px "Segoe UI", sans-serif';
+    cx.fillText(b.label, bx+7, by+b.h/2+3.5);
+  }
+
+  /* --- вертикальные нити каркаса --- */
+  cx.strokeStyle='rgba(238,243,239,0.07)';
+  for(let i=-2;i<=2;i++){
+    const x = tree.x + i*tree.halfW*0.5 + mx*0.3;
+    cx.beginPath(); cx.moveTo(x,tree.yTop-20); cx.lineTo(x,tree.yBot+8); cx.stroke();
+  }
+
+  /* --- частицы ели --- */
+  for(const p of parts){
+    let t = p.t, xr = p.xr;
+    if(!reduced){
+      if(p.free){ /* пыльца: уплывает вверх и растворяется */
+        t = (p.t + time*p.up*0.06) % 1.15;
+      }
+      xr = p.xr + Math.sin(time*0.7+p.sw)* (2+4*(1-p.t));  /* покачивание-дыхание */
+    }
+    const y = tree.yBot - t*(tree.yBot-tree.yTop);
+    const x = tree.x + xr + mx*(0.5+p.t*0.8);
+    const w = silhouette(Math.min(t,1))*tree.halfW;
+    if(Math.abs(xr)>w+6 && !p.trunk && !p.free) continue;
+
+    const twinkle = reduced ? 0.75 : 0.45+0.55*Math.sin(time*1.3+p.tw)**2;
+    const fade = p.free ? Math.max(0,1-t/1.15) : 1;
+    const c = p.trunk ? [150,120,90] : (p.gold ? pal.warm : pal.needle);
+    cx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(0.16+0.7*twinkle)*fade})`;
+    cx.beginPath();
+    cx.arc(x, y+my*(0.4+p.t*0.5), p.r*(p.gold?1.25:1), 0, 6.284);
+    cx.fill();
+  }
+
+  /* --- ростомер --- */
+  const rx = tree.x + tree.halfW*1.45 + mx*0.6;
+  cx.strokeStyle='rgba(238,243,239,0.25)';
+  cx.beginPath(); cx.moveTo(rx,tree.yTop); cx.lineTo(rx,tree.yBot); cx.stroke();
+  cx.font='10px "Segoe UI", sans-serif';
+  for(const m of MARKS){
+    const y = tree.yBot - m.t*(tree.yBot-tree.yTop);
+    cx.strokeStyle='rgba(238,243,239,0.5)';
+    cx.beginPath(); cx.moveTo(rx-5,y); cx.lineTo(rx+5,y); cx.stroke();
+    cx.fillStyle='rgba(238,243,239,0.55)';
+    cx.fillText(m.label, rx+12, y+3);
+  }
+  /* ползунок роста: медленно поднимается и сбрасывается */
+  const gt = reduced ? 0.62 : (time*0.028)%1;
+  const gy = tree.yBot - gt*(tree.yBot-tree.yTop);
+  cx.fillStyle = pal.accent;
+  cx.beginPath(); cx.arc(rx,gy,3,0,6.284); cx.fill();
+  cx.strokeStyle = hexA(pal.accent,0.35);
+  cx.beginPath(); cx.moveTo(rx,gy); cx.lineTo(rx, tree.yBot); cx.stroke();
+
+  requestAnimationFrame(draw);
+}
+function hexA(hex,a){
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+
+resize();
+spawnBoxes();
+applyPalette(1);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

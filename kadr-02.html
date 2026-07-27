@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ель School - кадр 02: светлый дизайн, 3 героя (клавиши 1 2 3)</title>
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --ink:#171a16;
+    --ink-dim:rgba(23,26,22,.55);
+    --accent:#8ac926;
+    --line:rgba(23,26,22,.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Segoe UI","Inter",system-ui,sans-serif;
+    overflow:hidden;
+  }
+  .hero{
+    position:fixed;inset:0;
+    background-size:cover;background-position:center;
+    transition:opacity .5s;
+  }
+  canvas{position:fixed;inset:0;display:block}
+  .frame{position:fixed;inset:0;pointer-events:none}
+
+  header{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:32px 48px 44px;
+    background:linear-gradient(to bottom, color-mix(in srgb, var(--bg) 85%, transparent), transparent);
+  }
+  .logo{font-size:13px;letter-spacing:.42em;font-weight:700;text-transform:uppercase}
+  .logo b{color:var(--accent)}
+  nav{display:flex;gap:34px;align-items:center}
+  nav span{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .burger{width:22px;height:10px;border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+
+  .title{
+    position:absolute;left:48px;top:50%;transform:translateY(-55%);
+    max-width:42vw;
+  }
+  .title .thin{
+    font-size:clamp(20px,2.8vw,38px);
+    font-weight:200;letter-spacing:.36em;text-transform:uppercase;
+  }
+  .title .fat{
+    font-size:clamp(52px,8.8vw,122px);
+    font-weight:800;letter-spacing:.01em;line-height:1.0;
+    text-transform:uppercase;
+  }
+  .title .fat em{font-style:normal;color:var(--accent)}
+  .title .rule{display:flex;align-items:center;gap:14px;margin:24px 0 0}
+  .title .rule i{display:block;width:64px;height:2px;background:var(--accent)}
+  .title .rule span{font-size:12.5px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase}
+  .cta{
+    pointer-events:auto;
+    display:inline-block;margin-top:36px;
+    padding:16px 36px;
+    background:var(--ink);color:var(--bg);
+    font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;
+    text-decoration:none;border:none;
+    transition:background .25s;
+  }
+  .cta:hover{background:var(--accent);color:var(--ink)}
+
+  .chapter{
+    position:absolute;right:96px;bottom:88px;
+    padding:18px 20px;
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    -webkit-backdrop-filter:blur(4px);
+    backdrop-filter:blur(4px);
+  }
+  .chapter .num{font-size:clamp(38px,4.4vw,60px);font-weight:800;color:var(--accent);line-height:1}
+  .chapter .name{margin-top:8px;font-size:13px;letter-spacing:.34em;text-transform:uppercase}
+  .chapter .sub{margin-top:10px;max-width:220px;font-size:11px;line-height:1.7;color:var(--ink-dim)}
+
+  .vline{position:absolute;right:56px;top:110px;bottom:190px;width:1px;background:var(--line)}
+  .side{position:absolute;right:20px;top:50%;transform:translateY(-50%)}
+  .side span{
+    writing-mode:vertical-rl;
+    font-size:10.5px;letter-spacing:.3em;color:var(--ink-dim);text-transform:uppercase;
+  }
+
+  footer{
+    position:absolute;left:48px;right:48px;bottom:30px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:14px;
+    background:linear-gradient(to top, color-mix(in srgb, var(--bg) 85%, transparent), transparent);
+  }
+  .dots{display:flex;gap:10px}
+  .dots i{width:6px;height:6px;border:1px solid var(--ink-dim);border-radius:50%}
+  .dots i.on{background:var(--accent);border-color:var(--accent)}
+  .hint{font-size:10.5px;letter-spacing:.12em;color:rgba(23,26,22,.35);text-transform:uppercase}
+
+  @media (max-width:760px){
+    header{padding:20px}
+    nav span{display:none}
+    .title{left:20px;max-width:88vw}
+    .chapter{right:20px;bottom:118px}
+    .vline,.side{display:none}
+    footer{left:20px;right:20px}
+  }
+</style>
+</head>
+<body>
+<div class="hero" id="hero"></div>
+<canvas id="cv"></canvas>
+
+<div class="frame">
+  <header>
+    <div class="logo">ЕЛЬ <b>SCHOOL</b></div>
+    <nav>
+      <span>Школа</span><span>Маршруты</span><span>Один день</span><span>Контакты</span>
+      <div class="burger"></div>
+    </nav>
+  </header>
+
+  <div class="title">
+    <div class="thin">Здесь</div>
+    <div class="fat">Растут<em>.</em></div>
+    <div class="rule"><i></i><span>Частная школа · 1-11 класс · Новосибирск</span></div>
+    <a class="cta" href="#">Записаться на диагностику</a>
+  </div>
+
+  <div class="chapter">
+    <div class="num">01.</div>
+    <div class="name" id="chName">Начало</div>
+    <div class="sub" id="chSub">Мы видим рост каждого ребёнка - и показываем его вам. Каждую неделю.</div>
+  </div>
+
+  <div class="vline"></div>
+  <div class="side"><span>Ползунова, 7</span></div>
+
+  <footer>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="hint">кадр 02 · герои: клавиши 1 2 3</div>
+  </footer>
+</div>
+
+<script>
+/* ============ три героя (переключение 1/2/3) ============ */
+const HEROES = {
+  1: {img:'gen/hero-a.webp', accent:'#7aa112', bg:'#efe9dc', ink:'#241d12',
+      focus:'right',  // где картинка плотная
+      sub:'Классическая школа. Цифровой слой. Ничего лишнего.'},
+  2: {img:'gen/hero-b.webp', accent:'#e84393', bg:'#f2f2f0', ink:'#1c1c1e',
+      focus:'center',
+      sub:'Ребёнок собирается из тысячи маленьких открытий.'},
+  3: {img:'gen/hero-c.webp', accent:'#5f9e1f', bg:'#e9e9e7', ink:'#16181a',
+      focus:'center',
+      sub:'Мы измеряем рост, а не оцениваем ребёнка.'},
+};
+let hero = HEROES[1];
+function applyHero(n){
+  hero = HEROES[n];
+  document.getElementById('hero').style.backgroundImage = `url(${hero.img})`;
+  const r = document.documentElement.style;
+  r.setProperty('--accent', hero.accent);
+  r.setProperty('--bg', hero.bg);
+  r.setProperty('--ink', hero.ink);
+  r.setProperty('--ink-dim', hero.ink + '99');
+  r.setProperty('--line', hero.ink + '2e');
+  document.body.style.background = hero.bg;
+  document.getElementById('chSub').textContent = hero.sub;
+}
+addEventListener('keydown', e=>{ if(HEROES[e.key]) applyHero(e.key); });
+
+/* ============ живой слой: плавающие рамки-аннотации ============ */
+const cv = document.getElementById('cv');
+const cx = cv.getContext('2d');
+let W,H,DPR;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function resize(){
+  DPR = Math.min(devicePixelRatio||1,2);
+  W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR;
+  cx.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize', resize);
+
+const LABELS = ['8:30','16:30','1 : 12','11 лет','тьютор','диагностика'];
+let labelIdx = 0;
+let boxes = [];
+function zone(){
+  /* рамки живут на «картиночной» половине кадра */
+  return hero.focus==='right'
+    ? {x0:W*0.52, x1:W*0.94, y0:H*0.18, y1:H*0.8}
+    : {x0:W*0.42, x1:W*0.86, y0:H*0.16, y1:H*0.78};
+}
+function newBox(b={}){
+  const z = zone();
+  const x = z.x0+Math.random()*(z.x1-z.x0);
+  const y = z.y0+Math.random()*(z.y1-z.y0);
+  return Object.assign(b,{
+    x0:(b.x1??x), y0:(b.y1??y),
+    x1:x, y1:y,
+    w:64+Math.random()*90, h:26+Math.random()*40,
+    label:LABELS[(labelIdx++)%LABELS.length],
+    born:performance.now(), life:5200+Math.random()*4200,
+  });
+}
+let mx=0,my=0,tx=0,ty=0;
+addEventListener('pointermove',e=>{ tx=(e.clientX/W-.5)*10; ty=(e.clientY/H-.5)*7; });
+
+let t0=performance.now();
+function draw(){
+  const now=performance.now(), time=(now-t0)/1000;
+  mx+=(tx-mx)*.05; my+=(ty-my)*.05;
+  cx.clearRect(0,0,W,H);
+  cx.lineWidth=1;
+
+  for(const b of boxes){
+    if(now-b.born>b.life && !reduced) newBox(b), b.born=now;
+    const k=reduced?1:Math.min(1,(now-b.born)/1500);
+    const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    const bx=b.x0+(b.x1-b.x0)*e+mx, by=b.y0+(b.y1-b.y0)*e+my;
+
+    cx.strokeStyle=hexA(hero.ink,.4);
+    cx.strokeRect(bx,by,b.w,b.h);
+    cx.fillStyle=hexA(hero.ink,.5);
+    cx.fillRect(bx-2,by-2,4,4);
+    /* хвостик-вынос */
+    cx.strokeStyle=hexA(hero.ink,.18);
+    cx.beginPath();cx.moveTo(bx+b.w,by+b.h);cx.lineTo(bx+b.w+26,by+b.h+14);cx.stroke();
+    cx.fillStyle=hexA(hero.ink,.72);
+    cx.font='10.5px "Segoe UI",sans-serif';
+    cx.fillText(b.label,bx+7,by+b.h/2+3.5);
+  }
+
+  /* тонкая шкала-ростомер слева от вертикальной линии справа */
+  const rx=W-88+mx*.4;
+  if(W>760){
+    cx.strokeStyle=hexA(hero.ink,.28);
+    cx.beginPath();cx.moveTo(rx,H*.2);cx.lineTo(rx,H*.72);cx.stroke();
+    const marks=[['0',.05],['1-4',.3],['5-9',.55],['10-11',.82]];
+    cx.font='9.5px "Segoe UI",sans-serif';
+    for(const [t,p] of marks){
+      const y=H*.72-p*(H*.52);
+      cx.beginPath();cx.moveTo(rx-4,y);cx.lineTo(rx+4,y);cx.stroke();
+      cx.fillStyle=hexA(hero.ink,.5);
+      cx.fillText(t,rx-34,y+3);
+    }
+    const gt=reduced?.62:(time*.03)%1;
+    cx.fillStyle=hero.accent;
+    cx.beginPath();cx.arc(rx,H*.72-gt*(H*.52),3,0,6.284);cx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+function hexA(hex,a){
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;
+}
+
+resize();
+boxes=[newBox(),newBox(),newBox()];
+applyHero(1);
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
